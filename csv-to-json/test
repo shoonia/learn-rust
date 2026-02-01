@@ -1,0 +1,2 @@
+cargo run -- tests/data.csv
+node tests/index.spec.js
