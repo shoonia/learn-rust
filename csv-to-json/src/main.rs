@@ -41,38 +41,72 @@ fn main() {
     };
 
     let literals: HashSet<&str> = HashSet::from(["null", "true", "false"]);
-    let mut line_itr = csv.lines().peekable();
+    let mut chars = csv.chars().peekable();
 
-    write("[\n");
+    write("[\n[");
 
-    while let Some(line) = line_itr.next() {
-        let mut item_itr = line.split(',').peekable();
+    while let Some(ch) = chars.next() {
+        match ch {
+            '"' => {
+                let mut token = String::from(ch);
+                let mut prev = ch;
 
-        write("[");
+                while let Some(i) = chars.next() {
+                    token.push(i);
 
-        while let Some(item) = item_itr.next() {
-            let on_format = item.starts_with('"') && item.ends_with('"')
-                || literals.contains(item)
-                || item.parse::<f64>().is_ok();
-
-            if on_format {
-                write(item);
-            } else {
-                write(&format!("\"{item}\""));
+                    if i == '"' && prev != '\\' {
+                        write(&token);
+                        break;
+                    } else {
+                        prev = i;
+                    }
+                }
             }
-
-            if item_itr.peek().is_some() {
-                write(",");
+            ',' => {
+                if let Some(&i) = chars.peek() {
+                    if i == ',' || i == '\n' {
+                        write(",\"\"");
+                    } else {
+                        write(",");
+                    }
+                }
             }
-        }
+            '\n' => {
+                if let Some(&i) = chars.peek() {
+                    write("],\n[");
 
-        write("]");
+                    if i == ',' {
+                        write("\"\"");
+                    }
+                }
+            }
+            _ => {
+                let mut token = String::from(ch);
 
-        if line_itr.peek().is_some() {
-            write(",\n");
+                while let Some(&i) = chars.peek() {
+                    if i == ',' || i == '\n' {
+                        break;
+                    } else {
+                        token.push(i);
+                        chars.next();
+                    }
+                }
+
+                let tok = token.as_str();
+
+                if literals.contains(tok) {
+                    write(tok);
+                } else if tok.parse::<f64>().is_ok() {
+                    write(tok);
+                } else {
+                    write(&format!("\"{}\"", tok));
+                }
+            }
         }
     }
 
-    write("\n]");
+    drop(chars);
+
+    write("]\n]");
     writer.flush().expect("Error flushing output file");
 }
