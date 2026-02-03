@@ -22,17 +22,17 @@ fn get_test_path(filename: &str) -> PathBuf {
 
 fn run_csv_test(csv: &str, json: &str) {
     let hash = hash_string(csv);
-    let csv_path = &get_test_path(&format!("{}.csv", hash));
-    let json_path = &get_test_path(&format!("{}.json", hash));
+    let csv_path = get_test_path(&format!("{}.csv", hash));
+    let json_path = get_test_path(&format!("{}.json", hash));
 
     fs::create_dir_all(csv_path.parent().unwrap()).expect("Unable to create test directory");
 
     let cleanup = || {
-        fs::remove_file(csv_path).ok();
-        fs::remove_file(json_path).ok();
+        fs::remove_file(&csv_path).ok();
+        fs::remove_file(&json_path).ok();
     };
 
-    let mut file = File::create(csv_path).expect("Unable to create test CSV file");
+    let mut file = File::create(&csv_path).expect("Unable to create test CSV file");
     file.write_all(csv.as_bytes())
         .expect("Unable to write to test CSV file");
 
@@ -41,7 +41,7 @@ fn run_csv_test(csv: &str, json: &str) {
         .output()
         .expect("Failed to run program");
 
-    let output = fs::read_to_string(json_path).expect("Unable to read test JSON file");
+    let output = fs::read_to_string(&json_path).expect("Unable to read test JSON file");
 
     assert_eq!(output, json);
 
