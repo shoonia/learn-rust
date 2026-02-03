@@ -49,28 +49,28 @@ fn main() {
                 let mut token = String::from(ch);
                 let mut prev = ch;
 
-                while let Some(i) = chars.next() {
-                    if i == '\n' {
+                while let Some(c) = chars.next() {
+                    if c == '\n' {
                         token.push_str("\\n");
                         continue;
-                    } else if i == '\r' {
+                    } else if c == '\r' {
                         token.push_str("\\r");
                         continue;
                     }
 
-                    token.push(i);
+                    token.push(c);
 
-                    if i == '"' && prev != '\\' {
+                    if c == '"' && prev != '\\' {
                         write(&token);
                         break;
                     } else {
-                        prev = i;
+                        prev = c;
                     }
                 }
             }
             ',' => match chars.peek() {
-                Some(&i) => {
-                    if i == ',' || i == '\n' {
+                Some(&c) => {
+                    if c == ',' || c == '\n' {
                         write(",\"\"");
                     } else {
                         write(",");
@@ -79,10 +79,10 @@ fn main() {
                 None => write(",\"\""),
             },
             '\n' => {
-                if let Some(&i) = chars.peek() {
+                if let Some(&c) = chars.peek() {
                     write("],\n[");
 
-                    if i == ',' {
+                    if c == ',' {
                         write("\"\"");
                     }
                 }
@@ -90,13 +90,13 @@ fn main() {
             _ => {
                 let mut token = String::from(ch);
 
-                while let Some(&i) = chars.peek() {
-                    if i == ',' || i == '\n' {
+                while let Some(&c) = chars.peek() {
+                    if c == ',' || c == '\n' {
                         break;
-                    } else {
-                        token.push(i);
-                        chars.next();
                     }
+
+                    token.push(c);
+                    chars.next();
                 }
 
                 write(&format!("\"{token}\""));
