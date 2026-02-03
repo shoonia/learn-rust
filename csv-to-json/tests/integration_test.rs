@@ -3,6 +3,7 @@ use std::fs::{self, File};
 use std::hash::{Hash, Hasher};
 use std::io::Write;
 use std::path::PathBuf;
+use std::process::Command;
 
 /**
  * Tests for CSV to JSON conversion based on the CSV specification
@@ -24,19 +25,18 @@ fn run_csv_test(csv: &str, json: &str) {
     let csv_path = get_test_path(&format!("{}.csv", hash));
     let json_path = get_test_path(&format!("{}.json", hash));
 
-    // Create target/test_files directory if it doesn't exist
     fs::create_dir_all(csv_path.parent().unwrap()).expect("Unable to create test directory");
 
     let cleanup = || {
-        let _ = fs::remove_file(&csv_path);
-        let _ = fs::remove_file(&json_path);
+        fs::remove_file(&csv_path).ok();
+        fs::remove_file(&json_path).ok();
     };
 
     let mut file = File::create(&csv_path).expect("Unable to create test CSV file");
     file.write_all(csv.as_bytes())
         .expect("Unable to write to test CSV file");
 
-    std::process::Command::new("cargo")
+    Command::new("cargo")
         .args(&["run", "--", csv_path.to_str().unwrap()])
         .output()
         .expect("Failed to run program");
