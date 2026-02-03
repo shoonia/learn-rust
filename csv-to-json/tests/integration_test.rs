@@ -91,6 +91,20 @@ xxx,"y, yy",zzz"#,
 }
 
 #[test]
+// 9. When a field enclosed in double quotes has spaces before and/or after the double quotes,
+// the spaces MUST be ignored.
+fn test_csv_with_spaces_around_quotes() {
+    run_csv_test(
+        r#"aaa,bbb,ccc
+xxx,  "y, yy" ,zzz"#,
+        r#"[
+["aaa","bbb","ccc"],
+["xxx","y, yy","zzz"]
+]"#,
+    );
+}
+
+#[test]
 // 11. All fields are always strings. CSV itself does not support type casting.
 fn test_fields_are_always_strings() {
     run_csv_test(

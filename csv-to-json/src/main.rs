@@ -68,6 +68,7 @@ fn main() {
                     }
                 }
             }
+            ' ' => {}
             ',' => match chars.peek() {
                 Some(&c) => {
                     if c == ',' || c == '\n' {
