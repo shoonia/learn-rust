@@ -69,16 +69,13 @@ fn main() {
                 }
             }
             ' ' => {}
-            ',' => match chars.peek() {
-                Some(&c) => {
-                    if c == ',' || c == '\n' {
-                        write(",\"\"");
-                    } else {
-                        write(",");
-                    }
+            ',' => {
+                if chars.peek().is_none_or(|c| *c == ',' || *c == '\n') {
+                    write(",\"\"");
+                } else {
+                    write(",");
                 }
-                None => write(",\"\""),
-            },
+            }
             '\n' => {
                 if let Some(&c) = chars.peek() {
                     write("],\n[");
