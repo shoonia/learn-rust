@@ -52,6 +52,14 @@ fn main() {
                 let mut prev = ch;
 
                 while let Some(i) = chars.next() {
+                    if i == '\n' {
+                        token.push_str("\\n");
+                        continue;
+                    } else if i == '\r' {
+                        token.push_str("\\r");
+                        continue;
+                    }
+
                     token.push(i);
 
                     if i == '"' && prev != '\\' {
@@ -99,7 +107,7 @@ fn main() {
                 } else if tok.parse::<f64>().is_ok() {
                     write(tok);
                 } else {
-                    write(&format!("\"{}\"", tok));
+                    write(&format!("\"{tok}\""));
                 }
             }
         }
