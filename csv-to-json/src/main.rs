@@ -1,4 +1,3 @@
-use std::collections::HashSet;
 use std::env::args;
 use std::fs::read_to_string;
 use std::io::Write;
@@ -40,7 +39,6 @@ fn main() {
             .expect("Error writing to output file");
     };
 
-    let literals: HashSet<&str> = HashSet::from(["null", "true", "false"]);
     let mut chars = csv.chars().peekable();
 
     write("[\n[");
@@ -101,15 +99,7 @@ fn main() {
                     }
                 }
 
-                let tok = token.as_str();
-
-                if literals.contains(tok) {
-                    write(tok);
-                } else if tok.parse::<f64>().is_ok() {
-                    write(tok);
-                } else {
-                    write(&format!("\"{tok}\""));
-                }
+                write(&format!("\"{token}\""));
             }
         }
     }

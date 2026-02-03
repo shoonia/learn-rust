@@ -74,3 +74,18 @@ xxx,yyy,zzz,"#,
 ]"#,
     );
 }
+
+#[test]
+// 7. Fields containing line breaks (CRLF, LF, or CR),
+// double quotes, or the delimiter character (normally a comma) MUST be enclosed in double-quotes.
+fn test_csv_with_quotes_and_breaks() {
+    run_csv_test(
+        r#"aaa,"b
+bb",ccc
+xxx,"y, yy",zzz"#,
+        r#"[
+["aaa","b\nbb","ccc"],
+["xxx","y, yy","zzz"]
+]"#,
+    );
+}
