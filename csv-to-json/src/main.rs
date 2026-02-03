@@ -70,15 +70,16 @@ fn main() {
                     }
                 }
             }
-            ',' => {
-                if let Some(&i) = chars.peek() {
+            ',' => match chars.peek() {
+                Some(&i) => {
                     if i == ',' || i == '\n' {
                         write(",\"\"");
                     } else {
                         write(",");
                     }
                 }
-            }
+                None => write(",\"\""),
+            },
             '\n' => {
                 if let Some(&i) = chars.peek() {
                     write("],\n[");
