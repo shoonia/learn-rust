@@ -30,14 +30,23 @@ pub fn csv_parser(csv: String, mut write: impl FnMut(&str) -> ()) {
                             continue;
                         }
 
-                        token.push(c);
+                        if c == '"' {
+                            if chars.peek().is_some_and(|n| *n == '"') {
+                                token.push_str("\\\"");
+                                prev = c;
+                                chars.next();
+                                continue;
+                            }
 
-                        if c == '"' && prev != '\\' {
-                            write(&token);
-                            break;
-                        } else {
-                            prev = c;
+                            if prev != '\\' {
+                                token.push(c);
+                                write(&token);
+                                break;
+                            }
                         }
+
+                        token.push(c);
+                        prev = c;
                     }
 
                     token.clear();

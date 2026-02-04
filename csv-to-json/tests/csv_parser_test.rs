@@ -71,6 +71,18 @@ xxx,"y, yy",zzz"#,
 }
 
 #[test]
+// 8. A double-quote appearing inside a field MUST be escaped by preceding it with another double quote,
+// and the field itself MUST be enclosed in double quotes.
+fn test_double_quotes_in_fields() {
+    run_csv_test(
+        r#"aaa,"b""bb",ccc"#,
+        r#"[
+["aaa","b\"bb","ccc"]
+]"#,
+    );
+}
+
+#[test]
 // 9. When a field enclosed in double quotes has spaces before and/or after the double quotes,
 // the spaces MUST be ignored.
 fn test_csv_with_spaces_around_quotes() {
