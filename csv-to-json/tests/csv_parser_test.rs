@@ -110,6 +110,20 @@ fn test_multiple_empty_fields() {
 }
 
 #[test]
+fn test_empty_field_inside() {
+    run_csv_test(
+        r#"1,2,3
+,,
+4,5,6"#,
+        r#"[
+["1","2","3"],
+["","",""],
+["4","5","6"]
+]"#,
+    );
+}
+
+#[test]
 fn test_file_starts_with_newline() {
     run_csv_test(
         r#"
