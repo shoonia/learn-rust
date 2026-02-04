@@ -4,6 +4,7 @@ pub fn csv_parser(csv: String, mut write: impl FnMut(&str) -> ()) {
         let mut chars = csv
             .strip_prefix('\u{feff}')
             .unwrap_or(&csv)
+            .trim_start()
             .chars()
             .peekable();
 

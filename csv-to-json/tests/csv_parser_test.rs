@@ -108,3 +108,30 @@ fn test_multiple_empty_fields() {
 ]"#,
     );
 }
+
+#[test]
+fn test_file_starts_with_newline() {
+    run_csv_test(
+        r#"
+
+aaa,bbb
+ccc,ddd"#,
+        r#"[
+["aaa","bbb"],
+["ccc","ddd"]
+]"#,
+    );
+}
+
+#[test]
+fn test_file_ends_with_newline() {
+    run_csv_test(
+        r#"aaa,bbb
+ccc,ddd
+"#,
+        r#"[
+["aaa","bbb"],
+["ccc","ddd"]
+]"#,
+    );
+}
