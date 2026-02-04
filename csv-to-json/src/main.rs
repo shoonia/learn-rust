@@ -5,6 +5,8 @@ use std::path::Path;
 
 mod io_utils;
 use io_utils::create_writer;
+mod csv_parser;
+use csv_parser::csv_parser;
 
 fn main() {
     let file_path: String = match args().nth(1) {
@@ -39,71 +41,6 @@ fn main() {
             .expect("Error writing to output file");
     };
 
-    let mut chars = csv.chars().peekable();
-
-    write("[\n[");
-
-    while let Some(ch) = chars.next() {
-        match ch {
-            '"' => {
-                let mut token = String::from(ch);
-                let mut prev = ch;
-
-                while let Some(c) = chars.next() {
-                    if c == '\n' {
-                        token.push_str("\\n");
-                        continue;
-                    } else if c == '\r' {
-                        token.push_str("\\r");
-                        continue;
-                    }
-
-                    token.push(c);
-
-                    if c == '"' && prev != '\\' {
-                        write(&token);
-                        break;
-                    } else {
-                        prev = c;
-                    }
-                }
-            }
-            ' ' => {}
-            ',' => {
-                if chars.peek().is_none_or(|c| *c == ',' || *c == '\n') {
-                    write(",\"\"");
-                } else {
-                    write(",");
-                }
-            }
-            '\n' => {
-                if let Some(&c) = chars.peek() {
-                    write("],\n[");
-
-                    if c == ',' {
-                        write("\"\"");
-                    }
-                }
-            }
-            _ => {
-                let mut token = String::from(ch);
-
-                while let Some(&c) = chars.peek() {
-                    if c == ',' || c == '\n' {
-                        break;
-                    }
-
-                    token.push(c);
-                    chars.next();
-                }
-
-                write(&format!("\"{token}\""));
-            }
-        }
-    }
-
-    drop(chars);
-
-    write("]\n]");
+    csv_parser(&csv, &mut write);
     writer.flush().expect("Error flushing output file");
 }

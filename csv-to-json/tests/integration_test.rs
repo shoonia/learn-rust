@@ -1,51 +1,20 @@
-use std::collections::hash_map::DefaultHasher;
-use std::fs::{self, File};
-use std::hash::{Hash, Hasher};
-use std::io::Write;
-use std::path::PathBuf;
-use std::process::Command;
+use csv_to_json::csv_parser::csv_parser;
 
 /**
  * Tests for CSV to JSON conversion based on the CSV specification
  * https://csv-spec.org/
  */
 
-fn hash_string(s: &str) -> String {
-    let mut hasher = DefaultHasher::new();
-    s.hash(&mut hasher);
-    hasher.finish().to_string()
-}
-
-fn get_test_path(filename: &str) -> PathBuf {
-    PathBuf::from("target/test_files").join(filename)
-}
-
 fn run_csv_test(csv: &str, json: &str) {
-    let hash = hash_string(csv);
-    let csv_path = get_test_path(&format!("{}.csv", hash));
-    let json_path = get_test_path(&format!("{}.json", hash));
+    let mut output = String::new();
+    {
+        let mut write = |s: &str| {
+            output.push_str(s);
+        };
 
-    fs::create_dir_all(csv_path.parent().unwrap()).expect("Unable to create test directory");
-
-    let cleanup = || {
-        fs::remove_file(&csv_path).ok();
-        fs::remove_file(&json_path).ok();
-    };
-
-    let mut file = File::create(&csv_path).expect("Unable to create test CSV file");
-    file.write_all(csv.as_bytes())
-        .expect("Unable to write to test CSV file");
-
-    Command::new("cargo")
-        .args(&["run", "--", csv_path.to_str().unwrap()])
-        .output()
-        .expect("Failed to run program");
-
-    let output = fs::read_to_string(&json_path).expect("Unable to read test JSON file");
-
+        csv_parser(csv, &mut write);
+    }
     assert_eq!(output, json);
-
-    cleanup();
 }
 
 #[test]
