@@ -1,4 +1,4 @@
-use csv_to_json::csv_parser::csv_parser;
+use csv_to_json::csv_parser;
 
 /**
  * Tests for CSV to JSON conversion based on the CSV specification

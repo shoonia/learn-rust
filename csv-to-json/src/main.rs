@@ -1,3 +1,4 @@
+use csv_to_json::csv_parser;
 use std::env::args;
 use std::fs::read_to_string;
 use std::io::Write;
@@ -5,8 +6,6 @@ use std::path::Path;
 
 mod io_utils;
 use io_utils::create_writer;
-mod csv_parser;
-use csv_parser::csv_parser;
 
 fn main() {
     let file_path: String = match args().nth(1) {
