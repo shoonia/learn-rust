@@ -1,7 +1,11 @@
 pub fn csv_parser(csv: String, mut write: impl FnMut(&str) -> ()) {
     write("[\n[");
     {
-        let mut chars = csv.chars().peekable();
+        let mut chars = csv
+            .strip_prefix('\u{feff}')
+            .unwrap_or(&csv)
+            .chars()
+            .peekable();
 
         while let Some(ch) = chars.next() {
             match ch {
