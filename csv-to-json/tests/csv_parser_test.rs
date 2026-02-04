@@ -96,3 +96,15 @@ fn test_fields_are_always_strings() {
 ]"#,
     );
 }
+
+// Additional test for multiple consecutive empty fields
+
+#[test]
+fn test_multiple_empty_fields() {
+    run_csv_test(
+        ",,,",
+        r#"[
+["","","",""]
+]"#,
+    );
+}

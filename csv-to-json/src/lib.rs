@@ -9,6 +9,10 @@ pub fn csv_parser(csv: String, mut write: impl FnMut(&str) -> ()) {
 
         let mut token = String::new();
 
+        if chars.peek().is_some_and(|c| *c == ',') {
+            write("\"\"");
+        }
+
         while let Some(ch) = chars.next() {
             match ch {
                 '"' => {
