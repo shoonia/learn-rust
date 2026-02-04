@@ -29,7 +29,7 @@ pub fn csv_parser(csv: String, mut write: impl FnMut(&str) -> ()) {
                     }
                 }
                 ',' => {
-                    if chars.peek().is_none_or(|c| *c == ',' || *c == '\n') {
+                    if chars.peek().is_none_or(|c| matches!(c, ',' | '\n' | '\r')) {
                         write(",\"\"");
                     } else {
                         write(",");
