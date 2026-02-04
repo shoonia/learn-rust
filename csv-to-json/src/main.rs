@@ -31,6 +31,11 @@ fn main() {
         }
     };
 
+    if csv.is_empty() {
+        eprintln!("The provided CSV file is empty.");
+        return;
+    }
+
     let output_path = path.with_extension("json");
     let mut writer = create_writer(output_path);
 
