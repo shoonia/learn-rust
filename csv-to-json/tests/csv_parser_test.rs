@@ -12,7 +12,7 @@ fn run_csv_test(csv: &str, json: &str) {
             output.push_str(s);
         };
 
-        csv_parser(csv, &mut write);
+        csv_parser(csv.to_string(), &mut write);
     }
     assert_eq!(output, json);
 }

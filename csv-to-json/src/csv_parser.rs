@@ -1,4 +1,4 @@
-pub fn csv_parser<F>(csv: &str, write: &mut F)
+pub fn csv_parser<F>(csv: String, write: &mut F)
 where
     F: FnMut(&str) -> (),
 {

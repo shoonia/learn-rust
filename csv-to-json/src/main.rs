@@ -41,6 +41,6 @@ fn main() {
             .expect("Error writing to output file");
     };
 
-    csv_parser(&csv, &mut write);
+    csv_parser(csv, &mut write);
     writer.flush().expect("Error flushing output file");
 }
