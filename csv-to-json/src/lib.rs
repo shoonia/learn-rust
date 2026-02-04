@@ -7,10 +7,13 @@ pub fn csv_parser(csv: String, mut write: impl FnMut(&str) -> ()) {
             .chars()
             .peekable();
 
+        let mut token = String::new();
+
         while let Some(ch) = chars.next() {
             match ch {
                 '"' => {
-                    let mut token = String::from(ch);
+                    token.push(ch);
+
                     let mut prev = ch;
 
                     while let Some(c) = chars.next() {
@@ -31,6 +34,8 @@ pub fn csv_parser(csv: String, mut write: impl FnMut(&str) -> ()) {
                             prev = c;
                         }
                     }
+
+                    token.clear();
                 }
                 ',' => {
                     if chars.peek().is_none_or(|c| matches!(c, ',' | '\n' | '\r')) {
@@ -49,7 +54,7 @@ pub fn csv_parser(csv: String, mut write: impl FnMut(&str) -> ()) {
                     }
                 }
                 _ => {
-                    let mut token = String::from(ch);
+                    token.push(ch);
 
                     while let Some(&c) = chars.peek() {
                         if matches!(c, ',' | '\n' | '\r' | '"') {
@@ -61,8 +66,12 @@ pub fn csv_parser(csv: String, mut write: impl FnMut(&str) -> ()) {
                     }
 
                     if !token.chars().all(|c| c == ' ') {
-                        write(&format!("\"{token}\""));
+                        write("\"");
+                        write(&token);
+                        write("\"");
                     }
+
+                    token.clear();
                 }
             }
         }
