@@ -35,12 +35,11 @@ fn main() {
     let output_path = path.with_extension("json");
     let mut writer = create_writer(output_path);
 
-    let mut write = |txt: &str| -> () {
+    csv_parser(csv, |chunk| {
         writer
-            .write_all(txt.as_bytes())
+            .write_all(chunk.as_bytes())
             .expect("Error writing to output file");
-    };
+    });
 
-    csv_parser(csv, &mut write);
     writer.flush().expect("Error flushing output file");
 }

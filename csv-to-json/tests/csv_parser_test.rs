@@ -7,13 +7,11 @@ use csv_to_json::csv_parser::csv_parser;
 
 fn run_csv_test(csv: &str, json: &str) {
     let mut output = String::new();
-    {
-        let mut write = |s: &str| {
-            output.push_str(s);
-        };
 
-        csv_parser(csv.to_string(), &mut write);
-    }
+    csv_parser(csv.to_string(), |chunk| {
+        output.push_str(chunk);
+    });
+
     assert_eq!(output, json);
 }
 

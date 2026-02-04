@@ -1,69 +1,66 @@
-pub fn csv_parser<F>(csv: String, write: &mut F)
-where
-    F: FnMut(&str) -> (),
-{
-    let mut chars = csv.chars().peekable();
-
+pub fn csv_parser(csv: String, mut write: impl FnMut(&str) -> ()) {
     write("[\n[");
+    {
+        let mut chars = csv.chars().peekable();
 
-    while let Some(ch) = chars.next() {
-        match ch {
-            '"' => {
-                let mut token = String::from(ch);
-                let mut prev = ch;
+        while let Some(ch) = chars.next() {
+            match ch {
+                '"' => {
+                    let mut token = String::from(ch);
+                    let mut prev = ch;
 
-                while let Some(c) = chars.next() {
-                    if c == '\n' {
-                        token.push_str("\\n");
-                        continue;
-                    } else if c == '\r' {
-                        token.push_str("\\r");
-                        continue;
+                    while let Some(c) = chars.next() {
+                        if c == '\n' {
+                            token.push_str("\\n");
+                            continue;
+                        } else if c == '\r' {
+                            token.push_str("\\r");
+                            continue;
+                        }
+
+                        token.push(c);
+
+                        if c == '"' && prev != '\\' {
+                            write(&token);
+                            break;
+                        } else {
+                            prev = c;
+                        }
                     }
-
-                    token.push(c);
-
-                    if c == '"' && prev != '\\' {
-                        write(&token);
-                        break;
+                }
+                ' ' => {}
+                ',' => {
+                    if chars.peek().is_none_or(|c| *c == ',' || *c == '\n') {
+                        write(",\"\"");
                     } else {
-                        prev = c;
+                        write(",");
                     }
                 }
-            }
-            ' ' => {}
-            ',' => {
-                if chars.peek().is_none_or(|c| *c == ',' || *c == '\n') {
-                    write(",\"\"");
-                } else {
-                    write(",");
-                }
-            }
-            '\n' => {
-                if let Some(&c) = chars.peek() {
-                    write("],\n[");
+                '\n' => {
+                    if let Some(&c) = chars.peek() {
+                        write("],\n[");
 
-                    if c == ',' {
-                        write("\"\"");
+                        if c == ',' {
+                            write("\"\"");
+                        }
                     }
                 }
-            }
-            _ => {
-                let mut token = String::from(ch);
+                _ => {
+                    let mut token = String::from(ch);
 
-                while let Some(&c) = chars.peek() {
-                    if c == ',' || c == '\n' {
-                        break;
+                    while let Some(&c) = chars.peek() {
+                        if c == ',' || c == '\n' {
+                            break;
+                        }
+
+                        token.push(c);
+                        chars.next();
                     }
 
-                    token.push(c);
-                    chars.next();
+                    write(&format!("\"{token}\""));
                 }
-
-                write(&format!("\"{token}\""));
             }
         }
     }
-
     write("]\n]");
 }
