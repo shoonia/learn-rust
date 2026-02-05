@@ -161,3 +161,13 @@ ccc,ddd
 ]"#,
     );
 }
+
+#[test]
+fn test_escaped_slashes_inside_quotes() {
+    run_csv_test(
+        r#""\a","\\b","\\\c""#,
+        r#"[
+["\\a","\\\\b","\\\\\\c"]
+]"#,
+    );
+}

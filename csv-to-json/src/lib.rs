@@ -25,11 +25,15 @@ pub fn csv_parser(csv: String, mut write: impl FnMut(&str) -> ()) {
                         match c {
                             '\n' => token.push_str("\\n"),
                             '\r' => token.push_str("\\r"),
+                            '\\' => token.push_str("\\\\"),
                             '"' => {
                                 if chars.peek().is_some_and(|n| *n == '"') {
                                     token.push_str("\\\"");
-                                    chars.next();
-                                } else if prev != '\\' {
+                                    prev = chars.next().unwrap();
+                                    continue;
+                                }
+
+                                if prev != '\\' {
                                     token.push(c);
                                     write(&token);
                                     break;
