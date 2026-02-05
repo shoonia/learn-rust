@@ -48,10 +48,10 @@ pub fn csv_parser(csv: String, mut write: impl FnMut(&str) -> ()) {
                     token.clear();
                 }
                 ',' => {
+                    write(",");
+
                     if chars.peek().is_none_or(|c| matches!(c, ',' | '\n' | '\r')) {
-                        write(",\"\"");
-                    } else {
-                        write(",");
+                        write("\"\"");
                     }
                 }
                 '\n' => {
@@ -64,14 +64,23 @@ pub fn csv_parser(csv: String, mut write: impl FnMut(&str) -> ()) {
                     }
                 }
                 _ => {
-                    token.push(ch);
+                    if ch == '\\' {
+                        token.push_str("\\\\");
+                    } else {
+                        token.push(ch);
+                    }
 
                     while let Some(&c) = chars.peek() {
                         if matches!(c, ',' | '\n' | '\r' | '"') {
                             break;
                         }
 
-                        token.push(c);
+                        if c == '\\' {
+                            token.push_str("\\\\");
+                        } else {
+                            token.push(c);
+                        }
+
                         chars.next();
                     }
 

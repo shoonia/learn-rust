@@ -171,3 +171,13 @@ fn test_escaped_slashes_inside_quotes() {
 ]"#,
     );
 }
+
+#[test]
+fn test_escaped_slashes() {
+    run_csv_test(
+        r#"\a,\\b,\\\c"#,
+        r#"[
+["\\a","\\\\b","\\\\\\c"]
+]"#,
+    );
+}
