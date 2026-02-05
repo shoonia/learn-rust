@@ -40,10 +40,12 @@ fn main() {
     let mut writer = create_writer(output_path);
 
     csv_parser(csv, |chunk| {
-        writer
-            .write_all(chunk.as_bytes())
-            .expect("Error writing to output file");
+        if let Err(error) = writer.write_all(chunk.as_bytes()) {
+            eprintln!("Error writing to output file: {}", error);
+        }
     });
 
-    writer.flush().expect("Error flushing output file");
+    if let Err(error) = writer.flush() {
+        eprintln!("Error writing to output file: {}", error);
+    }
 }
