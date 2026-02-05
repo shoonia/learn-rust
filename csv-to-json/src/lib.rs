@@ -22,30 +22,22 @@ pub fn csv_parser(csv: String, mut write: impl FnMut(&str) -> ()) {
                     let mut prev = ch;
 
                     while let Some(c) = chars.next() {
-                        if c == '\n' {
-                            token.push_str("\\n");
-                            continue;
-                        } else if c == '\r' {
-                            token.push_str("\\r");
-                            continue;
+                        match c {
+                            '\n' => token.push_str("\\n"),
+                            '\r' => token.push_str("\\r"),
+                            '"' => {
+                                if chars.peek().is_some_and(|n| *n == '"') {
+                                    token.push_str("\\\"");
+                                    chars.next();
+                                } else if prev != '\\' {
+                                    token.push(c);
+                                    write(&token);
+                                    break;
+                                }
+                            }
+                            _ => token.push(c),
                         }
 
-                        if c == '"' {
-                            if chars.peek().is_some_and(|n| *n == '"') {
-                                token.push_str("\\\"");
-                                prev = c;
-                                chars.next();
-                                continue;
-                            }
-
-                            if prev != '\\' {
-                                token.push(c);
-                                write(&token);
-                                break;
-                            }
-                        }
-
-                        token.push(c);
                         prev = c;
                     }
 
