@@ -84,7 +84,7 @@ pub fn csv_parser(csv: String, mut write: impl FnMut(&str) -> ()) {
                         chars.next();
                     }
 
-                    if !token.chars().all(|c| c == ' ') {
+                    if token.chars().any(|c| c != ' ') {
                         write("\"");
                         write(&token);
                         write("\"");
