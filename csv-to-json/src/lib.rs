@@ -16,6 +16,22 @@ pub fn csv_parser(csv: String, mut write: impl FnMut(&str) -> ()) {
 
         while let Some(ch) = chars.next() {
             match ch {
+                ',' => {
+                    write(",");
+
+                    if chars.peek().is_none_or(|c| matches!(c, ',' | '\n' | '\r')) {
+                        write("\"\"");
+                    }
+                }
+                '\n' => {
+                    if let Some(&c) = chars.peek() {
+                        write("],\n[");
+
+                        if c == ',' {
+                            write("\"\"");
+                        }
+                    }
+                }
                 '"' => {
                     token.push(ch);
 
@@ -47,26 +63,11 @@ pub fn csv_parser(csv: String, mut write: impl FnMut(&str) -> ()) {
 
                     token.clear();
                 }
-                ',' => {
-                    write(",");
-
-                    if chars.peek().is_none_or(|c| matches!(c, ',' | '\n' | '\r')) {
-                        write("\"\"");
-                    }
-                }
-                '\n' => {
-                    if let Some(&c) = chars.peek() {
-                        write("],\n[");
-
-                        if c == ',' {
-                            write("\"\"");
-                        }
-                    }
-                }
                 _ => {
                     if ch == '\\' {
-                        token.push_str("\\\\");
+                        token.push_str("\"\\\\");
                     } else {
+                        token.push('"');
                         token.push(ch);
                     }
 
@@ -84,10 +85,9 @@ pub fn csv_parser(csv: String, mut write: impl FnMut(&str) -> ()) {
                         chars.next();
                     }
 
-                    if token.chars().any(|c| c != ' ') {
-                        write("\"");
+                    if token.chars().skip(1).any(|c| c != ' ') {
+                        token.push('"');
                         write(&token);
-                        write("\"");
                     }
 
                     token.clear();
