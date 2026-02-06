@@ -3,7 +3,7 @@ name: csv-to-json
 on:
   push:
     branches:
-      - master
+      - main
 
 defaults:
   run:
@@ -14,11 +14,12 @@ env:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v4
+    - name: Setup Rust
+      uses: dtolnay/rust-toolchain@stable
     - name: Build
       run: cargo build
     - name: Run tests
