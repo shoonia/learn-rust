@@ -1,4 +1,4 @@
-use csv_to_json::csv_parser;
+use csv_to_json::csv_to_json;
 
 /**
  * Tests for CSV to JSON conversion based on the CSV specification
@@ -8,7 +8,7 @@ use csv_to_json::csv_parser;
 fn run_csv_test(csv: &str, json: &str) {
     let mut output = String::new();
 
-    csv_parser(csv.to_string(), |chunk| {
+    csv_to_json(csv.to_string(), |chunk| {
         output.push_str(chunk);
     });
 

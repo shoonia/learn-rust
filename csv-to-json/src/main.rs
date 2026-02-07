@@ -1,10 +1,10 @@
-use csv_to_json::csv_parser;
 use std::env::args;
 use std::fs::read_to_string;
 use std::io::Write;
 use std::path::Path;
 
 mod io_utils;
+use csv_to_json::csv_to_json;
 use io_utils::create_writer;
 
 fn main() {
@@ -39,7 +39,7 @@ fn main() {
     let output_path = path.with_extension("json");
     let mut writer = create_writer(output_path);
 
-    csv_parser(csv, |chunk| {
+    csv_to_json(csv, |chunk| {
         if let Err(error) = writer.write_all(chunk.as_bytes()) {
             eprintln!("Error writing to output file: {}", error);
         }
