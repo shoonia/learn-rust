@@ -65,3 +65,11 @@ pub async fn random_png() -> impl IntoResponse {
 
     ([(header::CONTENT_TYPE, "image/png")], bytes)
 }
+
+#[debug_handler]
+pub async fn redirect() -> impl IntoResponse {
+    (
+        StatusCode::MOVED_PERMANENTLY,
+        [(header::LOCATION, "https://rust-lang.org/learn/")],
+    )
+}

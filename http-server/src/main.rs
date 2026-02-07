@@ -14,6 +14,7 @@ async fn main() {
             get(routes::calculate_get).post(routes::calculate_post),
         )
         .route("/random.png", get(routes::random_png))
+        .route("/redirect", get(routes::redirect))
         .route("/", get(routes::root));
 
     let listener = match TcpListener::bind(HOST).await {
