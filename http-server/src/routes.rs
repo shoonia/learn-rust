@@ -1,5 +1,11 @@
 use crate::model::{CalculationRequest, CalculationResult, Response};
-use axum::{Json, debug_handler, extract::Query, http::StatusCode};
+use axum::{
+    Json, debug_handler,
+    extract::Query,
+    http::{StatusCode, header},
+    response::IntoResponse,
+};
+use std::time::{SystemTime, UNIX_EPOCH};
 
 #[debug_handler]
 pub async fn root() -> Json<Response> {
@@ -38,4 +44,24 @@ pub async fn calculate_post(
     Json(payload): Json<CalculationRequest>,
 ) -> Result<Json<CalculationResult>, StatusCode> {
     calculate(payload)
+}
+
+fn generate_random_bytes() -> (u8, u8, u8) {
+    let nanos = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .subsec_nanos();
+
+    (nanos as u8, (nanos >> 8) as u8, (nanos >> 16) as u8)
+}
+
+#[debug_handler]
+pub async fn random_png() -> impl IntoResponse {
+    let (r, g, b) = generate_random_bytes();
+    let bytes: Vec<u8> = vec![
+        71, 73, 70, 56, 55, 97, 1, 0, 1, 0, 128, 1, 0, 0, 0, 0, r, g, b, 44, 0, 0, 0, 0, 1, 0, 1,
+        0, 0, 2, 2, 76, 1, 0, 59,
+    ];
+
+    ([(header::CONTENT_TYPE, "image/png")], bytes)
 }
