@@ -51,11 +51,17 @@ fn main() {
 
     write_all("[\n");
 
+    let mut is_first_line = true;
+
     while let Some(line) = lines.next() {
         let data = match line {
             Ok(mut data) => {
-                if data.starts_with('\u{feff}') {
-                    data.remove(0);
+                if is_first_line {
+                    is_first_line = false;
+
+                    if data.starts_with('\u{feff}') {
+                        data.remove(0);
+                    }
                 }
                 data
             }
