@@ -1,4 +1,3 @@
-# curl https://rustwasm.org/wasm-pack/installer/init.sh -sSf | sh
-wasm-pack build --target web
+cargo build --target wasm32-unknown-unknown --release
 
 python3 -m http.server --bind 0.0.0.0 -d . 3000

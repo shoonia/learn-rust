@@ -48,17 +48,20 @@
   </div>
 
   <script type="module">
-    import init, { squarer } from './pkg/wasm.js';
-
     const input = document.getElementById('input-text');
     const out = document.getElementById('out');
 
-    init().then(() => {
-      input.addEventListener('input', (event) => {
-        const number = parseFloat(event.target.value);
-        const result = squarer(number);
+    const init = async () => {
+      const { instance } = await WebAssembly.instantiateStreaming(
+        fetch('target/wasm32-unknown-unknown/release/wasm.wasm'),
+        {}
+      );
+      return instance.exports.squarer;
+    }
 
-        out.textContent = result;
+    init().then((squarer) => {
+      input.addEventListener('input', (event) => {
+        out.textContent = squarer(event.target.valueAsNumber);
       });
     });
 
