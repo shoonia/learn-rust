@@ -10,58 +10,55 @@
     body {
       font-family: Arial, Helvetica, sans-serif;
     }
-
-    .content {
-      height: 95vh;
-      width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-    }
-
-    .content input[type=number] {
-      width: 200px;
-      padding: 5px;
-      font-size: 18px;
-      border-radius: 4px;
-      border: 1px solid lightblue;
-      text-align: center;
-    }
-
-    .content output {
-      font-size: 18px;
-    }
   </style>
 </head>
 
 <body>
 
-  <div class="content">
+  <div>
     <div>
-      <h1>Square</h1>
-      <input type="number" id="input-text" autofocus>
-      <p>
-        <output id="out">0</output>
-      </p>
+      <strong>Square</strong>
+      <input type="number" id="input-squarer" autofocus>
+      <output id="out-squarer">0</output>
+    </div>
+    <div>
+      <strong>Sum</strong>
+      <input type="search" id="input-sum" autofocus>
+      <output id="out-sum">0</output>
     </div>
   </div>
 
   <script type="module">
-    const input = document.getElementById('input-text');
-    const out = document.getElementById('out');
+    const $ = (id) => document.getElementById(id);
 
     const init = async () => {
       const { instance } = await WebAssembly.instantiateStreaming(
         fetch('target/wasm32-unknown-unknown/release/wasm.wasm'),
         {}
       );
-      return instance.exports.squarer;
+      return instance.exports;
     }
 
-    init().then((squarer) => {
-      input.addEventListener('input', (event) => {
-        out.textContent = squarer(event.target.valueAsNumber);
+    init().then((exports) => {
+      const outSquarer = $('out-squarer');
+      const outSum = $('out-sum');
+
+      $('input-squarer').addEventListener('input', (event) => {
+        outSquarer.textContent = exports.squarer(event.target.valueAsNumber);
+      });
+
+      $('input-sum').addEventListener('input', (event) => {
+        const value = event.target.value
+          .trim()
+          .split(' ')
+          .map(Number);
+
+        const len = value.length;
+        const ptr = 0;
+
+        new Float64Array(exports.memory.buffer, ptr, len).set(value);
+
+        outSum.textContent = exports.sum(ptr, len);
       });
     });
 
