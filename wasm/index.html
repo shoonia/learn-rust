@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>WebAssembly</title>
+  <style>
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .content {
+      height: 95vh;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .content input[type=number] {
+      width: 200px;
+      padding: 5px;
+      font-size: 18px;
+      border-radius: 4px;
+      border: 1px solid lightblue;
+      text-align: center;
+    }
+
+    .content output {
+      font-size: 18px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="content">
+    <div>
+      <h1>Square</h1>
+      <input type="number" id="input-text" autofocus>
+      <p>
+        <output id="out">0</output>
+      </p>
+    </div>
+  </div>
+
+  <script type="module">
+    import init, { squarer } from './pkg/wasm.js';
+
+    const input = document.getElementById('input-text');
+    const out = document.getElementById('out');
+
+    init().then(() => {
+      input.addEventListener('input', (event) => {
+        const number = parseFloat(event.target.value);
+        const result = squarer(number);
+
+        out.textContent = result;
+      });
+    });
+
+  </script>
+</body>
+
+</html>
