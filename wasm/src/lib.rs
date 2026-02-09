@@ -31,7 +31,12 @@ pub extern "C" fn dealloc(ptr: *mut u8, len: usize) {
 #[unsafe(no_mangle)]
 pub extern "C" fn to_uppercase(ptr: *const u8, len: usize, out_len_ptr: *mut usize) -> *mut u8 {
     let slice = unsafe { from_raw_parts(ptr, len) };
-    let result = String::from_utf8_lossy(slice).to_uppercase();
+    let result = String::from_utf8_lossy(slice)
+        .chars()
+        .map(|c| c.to_uppercase().to_string())
+        .collect::<Vec<_>>()
+        .join(" ");
+
     let bytes = result.into_bytes();
     let result_len = bytes.len();
     let result_ptr = alloc(result_len);
