@@ -23,8 +23,13 @@
     </div>
     <div>
       <strong>Sum</strong>
-      <input type="search" id="input-sum" autofocus>
+      <input type="text" id="input-sum" autofocus>
       <output id="out-sum">0</output>
+    </div>
+    <div>
+      <strong>Uppercase</strong>
+      <input type="text" id="input-uppercase" autofocus>
+      <output id="out-uppercase"></output>
     </div>
   </div>
 
@@ -40,12 +45,13 @@
     }
 
     init().then((exports) => {
-      const outSquarer = $('out-squarer');
-      const outSum = $('out-sum');
+      // Number squarer
 
       $('input-squarer').addEventListener('input', (event) => {
-        outSquarer.textContent = exports.squarer(event.target.valueAsNumber);
+        $('out-squarer').textContent = exports.squarer(event.target.valueAsNumber);
       });
+
+      // Array sum
 
       $('input-sum').addEventListener('input', (event) => {
         const value = event.target.value
@@ -58,7 +64,38 @@
 
         new Float64Array(exports.memory.buffer, ptr, len).set(value);
 
-        outSum.textContent = exports.sum(ptr, len);
+        $('out-sum').textContent = exports.sum(ptr, len);
+      });
+
+      // to Uppercase string
+
+      const sendString = (str) => {
+        const bytes = new TextEncoder().encode(str);
+        const ptr = exports.alloc(bytes.length);
+        new Uint8Array(exports.memory.buffer, ptr, bytes.length).set(bytes);
+        return [ptr, bytes.length];
+      }
+
+      const readString = (ptr, outLenPtr) => {
+        const resultLen = new DataView(exports.memory.buffer).getUint32(outLenPtr, true);
+        const bytes = new Uint8Array(exports.memory.buffer, ptr, resultLen);
+        return [
+          new TextDecoder().decode(bytes), 
+          resultLen
+        ];
+      }
+
+      $('input-uppercase').addEventListener('input', (event) => {
+        const value = event.target.value;
+        const [ptr, len] = sendString(value);
+        const outLenPtr = exports.alloc(8);
+        const resultPtr = exports.to_uppercase(ptr, len, outLenPtr);
+        const [resultStr, resultLen] = readString(resultPtr, outLenPtr);
+
+        $('out-uppercase').textContent = resultStr;
+        exports.dealloc(ptr, len);
+        exports.dealloc(resultPtr, resultLen);
+        exports.dealloc(outLenPtr, 8);
       });
     });
 
