@@ -2,7 +2,7 @@ use std::sync::{Arc, Mutex};
 
 use axum::{Router, routing::get, serve};
 use rusqlite::{Connection, Result};
-use tokio::{main, net::TcpListener};
+use tokio::{main, net::TcpListener, task};
 
 const HOST: &str = "0.0.0.0:3000";
 
@@ -23,11 +23,10 @@ fn init_db() -> Result<Arc<Mutex<Connection>>> {
 
 #[main]
 async fn main() {
-    let db_ref = init_db().unwrap();
+    let db = init_db().unwrap();
 
-    let handler = async move || {
-        db_ref
-            .clone()
+    let handler = task::spawn_blocking(move || {
+        db.clone()
             .try_lock()
             .unwrap()
             .query_row("SELECT COUNT(*) FROM person", (), |row| {
@@ -35,7 +34,9 @@ async fn main() {
             })
             .unwrap()
             .to_string()
-    };
+    })
+    .await
+    .unwrap();
 
     let app = Router::new().route("/count", get(handler));
 
