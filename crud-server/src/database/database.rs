@@ -81,4 +81,16 @@ impl Database {
             .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)
             .unwrap()
     }
+
+    pub async fn update_task(&self, id: i64, name: &str, details: &str) -> u64 {
+        query("UPDATE tasks SET name = ?, details = ? WHERE id = ?")
+            .bind(name)
+            .bind(details)
+            .bind(id)
+            .execute(&self.pool)
+            .await
+            .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)
+            .unwrap()
+            .rows_affected()
+    }
 }

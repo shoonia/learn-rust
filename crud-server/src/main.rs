@@ -14,7 +14,10 @@ use crate::{
     consts::*,
     context::AppContext,
     database::database::Database,
-    routes::{count::count_route, create::create_route, delete::delete_route, get::get_route},
+    routes::{
+        count::count_route, create::create_route, delete::delete_route, get::get_route,
+        update::update_route,
+    },
 };
 
 #[main]
@@ -23,7 +26,10 @@ async fn main() {
     let app_ctx = AppContext { db };
 
     let app = Router::new()
-        .route("/task", post(create_route).delete(delete_route))
+        .route(
+            "/task",
+            post(create_route).put(update_route).delete(delete_route),
+        )
         .route("/task/{id}", get(get_route))
         .route("/count", get(count_route))
         .with_state(app_ctx);
