@@ -8,6 +8,7 @@ use tokio::{main, net::TcpListener};
 mod consts;
 mod context;
 mod database;
+mod models;
 mod routes;
 
 use crate::{

@@ -1,12 +1,6 @@
 use axum::{Json, debug_handler, extract::State};
-use serde::Serialize;
 
-use crate::AppContext;
-
-#[derive(Serialize)]
-pub struct CountResponse {
-    count: i64,
-}
+use crate::{AppContext, models::CountResponse};
 
 #[debug_handler]
 pub async fn count_route(State(ctx): State<AppContext>) -> Json<CountResponse> {

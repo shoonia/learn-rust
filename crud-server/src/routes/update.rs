@@ -1,7 +1,7 @@
 use axum::{Json, debug_handler, extract::State, http::StatusCode, response::IntoResponse};
 use validator::Validate;
 
-use crate::{context::AppContext, database::database::Task};
+use crate::{context::AppContext, models::Task};
 
 #[debug_handler]
 pub async fn update_route(
@@ -14,7 +14,7 @@ pub async fn update_route(
 
     let Task { id, name, details } = payload;
 
-    ctx.db.update_task(id, &name, &details).await;
+    ctx.db.update_task(&id, &name, &details).await;
 
     Ok((StatusCode::OK, Json(Task { id, name, details })))
 }
