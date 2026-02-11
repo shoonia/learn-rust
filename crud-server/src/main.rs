@@ -1,4 +1,8 @@
-use axum::{Router, routing::get, serve};
+use axum::{
+    Router,
+    routing::{get, post},
+    serve,
+};
 use tokio::{main, net::TcpListener};
 
 mod consts;
@@ -7,7 +11,10 @@ mod database;
 mod routes;
 
 use crate::{
-    consts::*, context::AppContext, database::database::Database, routes::count::count_route,
+    consts::*,
+    context::AppContext,
+    database::database::Database,
+    routes::{count::count_route, create::create_route},
 };
 
 #[main]
@@ -17,6 +24,7 @@ async fn main() {
 
     let app = Router::new()
         .route("/count", get(count_route))
+        .route("/create", post(create_route))
         .with_state(app_ctx);
 
     let listener = match TcpListener::bind(HOST).await {

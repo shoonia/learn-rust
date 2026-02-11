@@ -1,3 +1,4 @@
+use axum::http::StatusCode;
 use sqlx::{Row, Sqlite, SqlitePool, migrate::MigrateDatabase, query};
 
 pub struct Database {
@@ -38,7 +39,19 @@ impl Database {
         query("SELECT COUNT(*) as count FROM tasks")
             .fetch_one(&self.pool)
             .await
+            .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)
             .unwrap()
             .get::<i64, _>("count")
+    }
+
+    pub async fn create_task(&self, name: &str, details: &str) -> i64 {
+        query("INSERT INTO tasks (name, details) VALUES (?, ?)")
+            .bind(name)
+            .bind(details)
+            .execute(&self.pool)
+            .await
+            .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)
+            .unwrap()
+            .last_insert_rowid()
     }
 }
