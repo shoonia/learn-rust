@@ -54,4 +54,14 @@ impl Database {
             .unwrap()
             .last_insert_rowid()
     }
+
+    pub async fn delete_task(&self, id: i64) -> u64 {
+        query("DELETE FROM tasks WHERE id = ?")
+            .bind(id)
+            .execute(&self.pool)
+            .await
+            .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)
+            .unwrap()
+            .rows_affected()
+    }
 }
