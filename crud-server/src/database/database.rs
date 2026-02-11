@@ -3,16 +3,9 @@ use sqlx::{Row, Sqlite, SqlitePool, migrate::MigrateDatabase, query, query_as};
 
 use crate::models::Task;
 
+#[derive(Clone)]
 pub struct Database {
     pool: SqlitePool,
-}
-
-impl Clone for Database {
-    fn clone(&self) -> Self {
-        Database {
-            pool: self.pool.clone(),
-        }
-    }
 }
 
 impl Database {
