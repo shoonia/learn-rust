@@ -17,7 +17,7 @@ use crate::{
     database::database::Database,
     routes::{
         count::count_route, create::create_route, delete::delete_route, get::get_route,
-        update::update_route,
+        list::list_route, update::update_route,
     },
 };
 
@@ -33,6 +33,7 @@ async fn main() {
         )
         .route("/task/{id}", get(get_route))
         .route("/count", get(count_route))
+        .route("/list", get(list_route))
         .with_state(app_ctx);
 
     let listener = match TcpListener::bind(HOST).await {

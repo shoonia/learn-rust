@@ -48,3 +48,17 @@ pub struct CreateRequest {
 pub struct DeleteRequest {
     pub id: i64,
 }
+
+#[derive(Deserialize, Validate)]
+pub struct ListRequest {
+    #[validate(range(min = 1, max = 100, message = "`limit` must be between 1 and 100"))]
+    pub limit: Option<u32>,
+
+    #[validate(range(min = 1, message = "`offset` must be greater than or equal to 1"))]
+    pub offset: Option<u32>,
+}
+
+#[derive(Serialize)]
+pub struct ListResponse {
+    pub tasks: Vec<Task>,
+}

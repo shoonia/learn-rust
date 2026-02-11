@@ -87,4 +87,14 @@ impl Database {
             .unwrap()
             .rows_affected()
     }
+
+    pub async fn list_tasks(&self, limit: &u32, offset: &u32) -> Vec<Task> {
+        query_as::<_, Task>("SELECT * FROM tasks LIMIT ? OFFSET ?")
+            .bind(limit)
+            .bind(offset)
+            .fetch_all(&self.pool)
+            .await
+            .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)
+            .unwrap()
+    }
 }
