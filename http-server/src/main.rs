@@ -15,6 +15,7 @@ async fn main() {
         )
         .route("/random.png", get(routes::random_png))
         .route("/redirect", get(routes::redirect))
+        .route("/ip", get(routes::get_my_ip))
         .route("/", get(routes::root));
 
     let listener = match TcpListener::bind(HOST).await {
@@ -24,6 +25,8 @@ async fn main() {
             return;
         }
     };
+
+    println!("Server running on http://{HOST}");
 
     match serve(listener, app).await {
         Ok(_) => println!("Server stopped gracefully."),

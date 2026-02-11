@@ -1,10 +1,11 @@
-use crate::model::{CalculationRequest, CalculationResult, Response};
+use crate::model::{CalculationRequest, CalculationResult, MyApiResponse, Response};
 use axum::{
     Json, debug_handler,
     extract::Query,
     http::{StatusCode, header},
     response::IntoResponse,
 };
+use reqwest::Client;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 #[debug_handler]
@@ -72,4 +73,19 @@ pub async fn redirect() -> impl IntoResponse {
         StatusCode::MOVED_PERMANENTLY,
         [(header::LOCATION, "https://rust-lang.org/learn/")],
     )
+}
+
+#[debug_handler]
+pub async fn get_my_ip() -> Json<MyApiResponse> {
+    let reqwest = Client::new();
+    let response = reqwest
+        .get("https://httpbin.org/ip")
+        .send()
+        .await
+        .unwrap()
+        .json::<MyApiResponse>()
+        .await
+        .unwrap();
+
+    Json(response)
 }
