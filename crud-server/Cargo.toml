@@ -8,3 +8,4 @@ sqlx = { version = "0.8.6", features = [ "runtime-tokio",  "sqlite", "macros" ] 
 axum = { version = "0.8.8", features = ["macros", "json"] }
 serde = { version = "1.0.228", features = ["derive"] }
 tokio = { version = "1.49.0", features = ["full"] }
+validator = { version = "0.20.0", features = ["derive"] }

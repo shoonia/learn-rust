@@ -1,4 +1,5 @@
 use axum::{Json, debug_handler, extract::State, http::StatusCode, response::IntoResponse};
+use validator::Validate;
 
 use crate::{context::AppContext, database::database::Task};
 
@@ -7,21 +8,11 @@ pub async fn update_route(
     State(ctx): State<AppContext>,
     Json(payload): Json<Task>,
 ) -> Result<impl IntoResponse, (StatusCode, String)> {
+    if let Err(e) = payload.validate() {
+        return Err((StatusCode::BAD_REQUEST, format!("Validation error: {}", e)));
+    }
+
     let Task { id, name, details } = payload;
-
-    if name.trim().is_empty() || details.trim().is_empty() {
-        return Err((
-            StatusCode::BAD_REQUEST,
-            "`name` and `details` cannot be empty".to_string(),
-        ));
-    }
-
-    if name.len() > 255 || details.len() > 255 {
-        return Err((
-            StatusCode::BAD_REQUEST,
-            "`name` and `details` cannot exceed 255 characters".to_string(),
-        ));
-    }
 
     ctx.db.update_task(id, &name, &details).await;
 

@@ -1,11 +1,25 @@
 use axum::http::StatusCode;
 use serde::{Deserialize, Serialize};
 use sqlx::{Row, Sqlite, SqlitePool, migrate::MigrateDatabase, prelude::FromRow, query, query_as};
+use validator::Validate;
 
-#[derive(Debug, FromRow, Serialize, Deserialize)]
+#[derive(Debug, FromRow, Serialize, Deserialize, Validate)]
 pub struct Task {
+    #[validate(range(min = 0, message = "`id` must be a non-negative integer"))]
     pub id: i64,
+
+    #[validate(length(
+        min = 1,
+        max = 255,
+        message = "`name` must be between 1 and 255 characters"
+    ))]
     pub name: String,
+
+    #[validate(length(
+        min = 1,
+        max = 255,
+        message = "`details` must be between 1 and 255 characters"
+    ))]
     pub details: String,
 }
 
