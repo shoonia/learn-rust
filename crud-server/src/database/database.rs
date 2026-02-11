@@ -1,5 +1,13 @@
 use axum::http::StatusCode;
-use sqlx::{Row, Sqlite, SqlitePool, migrate::MigrateDatabase, query};
+use serde::{Deserialize, Serialize};
+use sqlx::{Row, Sqlite, SqlitePool, migrate::MigrateDatabase, prelude::FromRow, query, query_as};
+
+#[derive(Debug, FromRow, Serialize, Deserialize)]
+pub struct Task {
+    pub id: i64,
+    pub name: String,
+    pub details: String,
+}
 
 pub struct Database {
     pool: SqlitePool,
@@ -63,5 +71,14 @@ impl Database {
             .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)
             .unwrap()
             .rows_affected()
+    }
+
+    pub async fn get_task(&self, id: i64) -> Task {
+        query_as::<_, Task>("SELECT * FROM tasks WHERE id = ?")
+            .bind(id)
+            .fetch_one(&self.pool)
+            .await
+            .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)
+            .unwrap()
     }
 }

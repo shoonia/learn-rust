@@ -1,18 +1,11 @@
 use axum::{Json, debug_handler, extract::State, http::StatusCode, response::IntoResponse};
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
-use crate::context::AppContext;
+use crate::{context::AppContext, database::database::Task};
 
 #[derive(Deserialize)]
 
 pub struct CreateRequest {
-    pub name: String,
-    pub details: String,
-}
-
-#[derive(Serialize)]
-pub struct CreateResponse {
-    pub id: i64,
     pub name: String,
     pub details: String,
 }
@@ -40,8 +33,5 @@ pub async fn create_route(
 
     let id = ctx.db.create_task(&name, &details).await;
 
-    Ok((
-        StatusCode::CREATED,
-        Json(CreateResponse { id, name, details }),
-    ))
+    Ok((StatusCode::CREATED, Json(Task { id, name, details })))
 }
