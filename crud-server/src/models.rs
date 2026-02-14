@@ -20,6 +20,8 @@ pub struct Task {
         message = "`details` must be between 1 and 255 characters"
     ))]
     pub details: String,
+    pub date_created: Option<String>,
+    pub date_updated: Option<String>,
 }
 
 #[derive(Serialize)]

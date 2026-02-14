@@ -16,11 +16,27 @@ impl Database {
         let pool = SqlitePool::connect(url).await.unwrap();
 
         query(
-            "CREATE TABLE IF NOT EXISTS tasks (
-            id INTEGER PRIMARY KEY AUTOINCREMENT, 
-            title VARCHAR(255) NOT NULL,
-            details VARCHAR(255) NOT NULL
-        )",
+            "
+            CREATE TABLE IF NOT EXISTS tasks (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              title VARCHAR(255) NOT NULL,
+              details VARCHAR(255) NOT NULL,
+              date_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+              date_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )",
+        )
+        .execute(&pool)
+        .await
+        .unwrap();
+
+        query(
+            "
+            CREATE TRIGGER IF NOT EXISTS update_tasks_timestamp
+            AFTER UPDATE OF title, details ON tasks
+            BEGIN
+              UPDATE tasks SET date_updated = CURRENT_TIMESTAMP 
+              WHERE id = OLD.id;
+            END;",
         )
         .execute(&pool)
         .await
@@ -40,9 +56,9 @@ impl Database {
     pub async fn create_task(&self, title: &str, details: &str) -> Task {
         query_as::<_, Task>(
             "
-        INSERT INTO tasks (title, details) VALUES (?, ?)
-        RETURNING id, title, details
-        ",
+            INSERT INTO tasks (title, details) VALUES (?, ?)
+            RETURNING *
+            ",
         )
         .bind(title)
         .bind(details)
@@ -72,7 +88,7 @@ impl Database {
         query_as::<_, Task>(
             "UPDATE tasks SET title = ?, details = ? 
             WHERE id = ?
-            RETURNING id, title, details
+            RETURNING *
             ",
         )
         .bind(title)

@@ -1,6 +1,6 @@
 use axum::{
     Router,
-    routing::{get, post},
+    routing::{get, put},
     serve,
 };
 use tokio::{main, net::TcpListener};
@@ -29,7 +29,7 @@ async fn main() {
     let app = Router::new()
         .route(
             "/task",
-            post(create_route).put(update_route).delete(delete_route),
+            put(create_route).patch(update_route).delete(delete_route),
         )
         .route("/task/{id}", get(get_route))
         .route("/count", get(count_route))
