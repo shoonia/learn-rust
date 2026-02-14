@@ -1,4 +1,3 @@
-use axum::http::StatusCode;
 use sqlx::{Row, Sqlite, SqlitePool, migrate::MigrateDatabase, query, query_as};
 
 use crate::models::Task;
@@ -19,7 +18,7 @@ impl Database {
         query(
             "CREATE TABLE IF NOT EXISTS tasks (
             id INTEGER PRIMARY KEY AUTOINCREMENT, 
-            name VARCHAR(255) NOT NULL,
+            title VARCHAR(255) NOT NULL,
             details VARCHAR(255) NOT NULL
         )",
         )
@@ -34,20 +33,22 @@ impl Database {
         query("SELECT COUNT(*) as count FROM tasks")
             .fetch_one(&self.pool)
             .await
-            .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)
             .unwrap()
             .get::<i64, _>("count")
     }
 
-    pub async fn create_task(&self, name: &str, details: &str) -> i64 {
-        query("INSERT INTO tasks (name, details) VALUES (?, ?)")
-            .bind(name)
-            .bind(details)
-            .execute(&self.pool)
-            .await
-            .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)
-            .unwrap()
-            .last_insert_rowid()
+    pub async fn create_task(&self, title: &str, details: &str) -> Task {
+        query_as::<_, Task>(
+            "
+        INSERT INTO tasks (title, details) VALUES (?, ?)
+        RETURNING id, title, details
+        ",
+        )
+        .bind(title)
+        .bind(details)
+        .fetch_one(&self.pool)
+        .await
+        .unwrap()
     }
 
     pub async fn delete_task(&self, id: &i64) -> u64 {
@@ -55,7 +56,6 @@ impl Database {
             .bind(id)
             .execute(&self.pool)
             .await
-            .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)
             .unwrap()
             .rows_affected()
     }
@@ -65,20 +65,22 @@ impl Database {
             .bind(id)
             .fetch_one(&self.pool)
             .await
-            .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)
             .unwrap()
     }
 
-    pub async fn update_task(&self, id: &i64, name: &str, details: &str) -> u64 {
-        query("UPDATE tasks SET name = ?, details = ? WHERE id = ?")
-            .bind(name)
-            .bind(details)
-            .bind(id)
-            .execute(&self.pool)
-            .await
-            .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)
-            .unwrap()
-            .rows_affected()
+    pub async fn update_task(&self, id: &i64, title: &str, details: &str) -> Task {
+        query_as::<_, Task>(
+            "UPDATE tasks SET title = ?, details = ? 
+            WHERE id = ?
+            RETURNING id, title, details
+            ",
+        )
+        .bind(title)
+        .bind(details)
+        .bind(id)
+        .fetch_one(&self.pool)
+        .await
+        .unwrap()
     }
 
     pub async fn list_tasks(&self, limit: &u32, offset: &u32) -> Vec<Task> {
@@ -87,7 +89,6 @@ impl Database {
             .bind(offset)
             .fetch_all(&self.pool)
             .await
-            .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)
             .unwrap()
     }
 }

@@ -4,11 +4,12 @@ use axum::{
     http::StatusCode,
     response::IntoResponse,
 };
+use tokio::join;
 use validator::Validate;
 
 use crate::{
     context::AppContext,
-    models::{ListRequest, ListResponse},
+    models::{ListRequest, ListResponse, Pagin},
 };
 
 #[debug_handler]
@@ -20,10 +21,16 @@ pub async fn list_route(
         return Err((StatusCode::BAD_REQUEST, format!("Validation error: {}", e)));
     }
 
-    let limit = params.limit.unwrap_or(10);
+    let limit = params.limit.unwrap_or(100);
     let offset = params.offset.unwrap_or(0);
 
-    let tasks = ctx.db.list_tasks(&limit, &offset).await;
+    let (tasks, total) = join!(ctx.db.list_tasks(&limit, &offset), ctx.db.count_tasks());
 
-    Ok(Json(ListResponse { tasks }))
+    let pagin = Pagin {
+        total,
+        limit,
+        offset,
+    };
+
+    Ok(Json(ListResponse { tasks, pagin }))
 }

@@ -10,9 +10,9 @@ pub struct Task {
     #[validate(length(
         min = 1,
         max = 255,
-        message = "`name` must be between 1 and 255 characters"
+        message = "`title` must be between 1 and 255 characters"
     ))]
-    pub name: String,
+    pub title: String,
 
     #[validate(length(
         min = 1,
@@ -32,9 +32,9 @@ pub struct CreateRequest {
     #[validate(length(
         min = 1,
         max = 255,
-        message = "`name` must be between 1 and 255 characters"
+        message = "`title` must be between 1 and 255 characters"
     ))]
-    pub name: String,
+    pub title: String,
 
     #[validate(length(
         min = 1,
@@ -54,11 +54,19 @@ pub struct ListRequest {
     #[validate(range(min = 1, max = 100, message = "`limit` must be between 1 and 100"))]
     pub limit: Option<u32>,
 
-    #[validate(range(min = 1, message = "`offset` must be greater than or equal to 1"))]
+    #[validate(range(min = 0, message = "`offset` must be greater than or equal to 0"))]
     pub offset: Option<u32>,
+}
+
+#[derive(Serialize)]
+pub struct Pagin {
+    pub total: i64,
+    pub limit: u32,
+    pub offset: u32,
 }
 
 #[derive(Serialize)]
 pub struct ListResponse {
     pub tasks: Vec<Task>,
+    pub pagin: Pagin,
 }

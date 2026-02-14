@@ -12,9 +12,8 @@ pub async fn update_route(
         return Err((StatusCode::BAD_REQUEST, format!("Validation error: {}", e)));
     }
 
-    let Task { id, name, details } = payload;
+    let Task { id, title, details } = payload;
+    let updated_task = ctx.db.update_task(&id, &title, &details).await;
 
-    ctx.db.update_task(&id, &name, &details).await;
-
-    Ok((StatusCode::OK, Json(Task { id, name, details })))
+    Ok((StatusCode::OK, Json(updated_task)))
 }
