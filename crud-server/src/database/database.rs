@@ -29,19 +29,6 @@ impl Database {
         .execute(&pool)
         .await?;
 
-        query(
-            "
-            CREATE TRIGGER IF NOT EXISTS update_tasks_timestamp
-            AFTER UPDATE OF title, details ON tasks
-            BEGIN
-              UPDATE tasks SET date_updated = CURRENT_TIMESTAMP
-              WHERE id = OLD.id;
-            END
-            ",
-        )
-        .execute(&pool)
-        .await?;
-
         Ok(Database { pool })
     }
 
@@ -89,7 +76,7 @@ impl Database {
     ) -> Result<Task, Error> {
         let result = query_as::<_, Task>(
             "
-            UPDATE tasks SET title = ?, details = ?, revision = revision + 1
+            UPDATE tasks SET title = ?, details = ?, revision = revision + 1, date_updated = CURRENT_TIMESTAMP
             WHERE id = ? AND revision = ?
             RETURNING *
             ",
