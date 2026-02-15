@@ -3,6 +3,7 @@ use axum::{
     routing::{get, put},
     serve,
 };
+use std::error::Error;
 use tokio::{main, net::TcpListener};
 
 mod consts;
@@ -22,15 +23,8 @@ use crate::{
 };
 
 #[main]
-async fn main() {
-    let db = Database::new(DB_URL).await;
-
-    if let Err(e) = &db {
-        eprintln!("Failed to initialize database: {}", e);
-        return;
-    }
-
-    let app_ctx = AppContext { db: db.unwrap() };
+async fn main() -> Result<(), Box<dyn Error>> {
+    let db = Database::new(DB_URL).await?;
 
     let app = Router::new()
         .route(
@@ -41,19 +35,11 @@ async fn main() {
         .route("/count", get(count_route))
         .route("/tasks", get(list_route))
         .fallback(not_found_route)
-        .with_state(app_ctx);
+        .with_state(AppContext { db });
 
-    let listener = match TcpListener::bind(HOST).await {
-        Ok(listener) => listener,
-        Err(e) => {
-            eprintln!("Failed to bind to {HOST}: {}", e);
-            return;
-        }
-    };
+    let listener = TcpListener::bind(HOST).await?;
 
     println!("Server running on http://{HOST}");
-
-    if let Err(e) = serve(listener, app).await {
-        eprintln!("Server error: {}", e);
-    }
+    serve(listener, app).await?;
+    Ok(())
 }
