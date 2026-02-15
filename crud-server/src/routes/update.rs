@@ -1,8 +1,7 @@
 use axum::{Json, debug_handler, extract::State, http::StatusCode, response::IntoResponse};
-use sqlx::Error;
 use validator::Validate;
 
-use crate::{context::AppContext, models::Task};
+use crate::{context::AppContext, database::utils::map_error, models::Task};
 
 #[debug_handler]
 pub async fn update_route(
@@ -17,14 +16,7 @@ pub async fn update_route(
         .db
         .update_task(req.id, req.revision, req.title, req.details)
         .await
-        .map_err(|e| match e {
-            Error::RowNotFound => (StatusCode::NOT_FOUND, "Task not found".to_string()),
-            Error::InvalidArgument(_) => (StatusCode::CONFLICT, "Revision mismatch".to_string()),
-            _ => (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                format!("Failed to update task: {}", e),
-            ),
-        })?;
+        .map_err(map_error)?;
 
     Ok((StatusCode::OK, Json(updated_task)))
 }

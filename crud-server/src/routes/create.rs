@@ -1,7 +1,7 @@
 use axum::{Json, debug_handler, extract::State, http::StatusCode, response::IntoResponse};
 use validator::Validate;
 
-use crate::{context::AppContext, models::CreateRequest};
+use crate::{context::AppContext, database::utils::map_error, models::CreateRequest};
 
 #[debug_handler]
 pub async fn create_route(
@@ -14,12 +14,11 @@ pub async fn create_route(
 
     let CreateRequest { title, details } = payload;
 
-    let task = ctx.db.create_task(title, details).await.map_err(|e| {
-        (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            format!("Failed to create task {}", e),
-        )
-    })?;
+    let task = ctx
+        .db
+        .create_task(title, details)
+        .await
+        .map_err(map_error)?;
 
     Ok((StatusCode::CREATED, Json(task)))
 }
