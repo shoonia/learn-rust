@@ -61,10 +61,15 @@ impl Database {
     }
 
     pub async fn get_task(&self, id: i64) -> Result<Task, Error> {
-        query_as::<_, Task>("SELECT * FROM tasks WHERE id = ?")
+        let result = query_as::<_, Task>("SELECT * FROM tasks WHERE id = ?")
             .bind(id)
-            .fetch_one(&self.pool)
-            .await
+            .fetch_optional(&self.pool)
+            .await?;
+
+        match result {
+            Some(task) => Ok(task),
+            None => Err(Error::RowNotFound),
+        }
     }
 
     pub async fn update_task(
