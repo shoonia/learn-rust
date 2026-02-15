@@ -15,7 +15,13 @@ pub async fn update_route(
     let updated_task = ctx
         .db
         .update_task(&payload.id, &payload.title, &payload.details)
-        .await;
+        .await
+        .map_err(|e| {
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                format!("Failed to update task: {}", e),
+            )
+        })?;
 
     Ok((StatusCode::OK, Json(updated_task)))
 }

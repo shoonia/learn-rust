@@ -1,4 +1,4 @@
-use sqlx::{Row, Sqlite, SqlitePool, migrate::MigrateDatabase, query, query_as};
+use sqlx::{Error, Row, Sqlite, SqlitePool, migrate::MigrateDatabase, query, query_as};
 
 use crate::models::Task;
 
@@ -8,12 +8,12 @@ pub struct Database {
 }
 
 impl Database {
-    pub async fn new(url: &str) -> Self {
+    pub async fn new(url: &str) -> Result<Self, Error> {
         if !Sqlite::database_exists(url).await.unwrap_or(false) {
-            Sqlite::create_database(url).await.unwrap();
+            Sqlite::create_database(url).await?;
         }
 
-        let pool = SqlitePool::connect(url).await.unwrap();
+        let pool = SqlitePool::connect(url).await?;
 
         query(
             "
@@ -26,8 +26,7 @@ impl Database {
             )",
         )
         .execute(&pool)
-        .await
-        .unwrap();
+        .await?;
 
         query(
             "
@@ -39,21 +38,19 @@ impl Database {
             END;",
         )
         .execute(&pool)
-        .await
-        .unwrap();
+        .await?;
 
-        Database { pool }
+        Ok(Database { pool })
     }
 
-    pub async fn count_tasks(&self) -> i64 {
+    pub async fn count_tasks(&self) -> Result<i64, Error> {
         query("SELECT COUNT(*) as count FROM tasks")
             .fetch_one(&self.pool)
             .await
-            .unwrap()
-            .get::<i64, _>("count")
+            .map(|row| row.get::<i64, _>("count"))
     }
 
-    pub async fn create_task(&self, title: &str, details: &str) -> Task {
+    pub async fn create_task(&self, title: &str, details: &str) -> Result<Task, Error> {
         query_as::<_, Task>(
             "
             INSERT INTO tasks (title, details) VALUES (?, ?)
@@ -64,27 +61,24 @@ impl Database {
         .bind(details)
         .fetch_one(&self.pool)
         .await
-        .unwrap()
     }
 
-    pub async fn delete_task(&self, id: &i64) -> u64 {
+    pub async fn delete_task(&self, id: &i64) -> Result<u64, Error> {
         query("DELETE FROM tasks WHERE id = ?")
             .bind(id)
             .execute(&self.pool)
             .await
-            .unwrap()
-            .rows_affected()
+            .map(|r| r.rows_affected())
     }
 
-    pub async fn get_task(&self, id: &i64) -> Task {
+    pub async fn get_task(&self, id: &i64) -> Result<Task, Error> {
         query_as::<_, Task>("SELECT * FROM tasks WHERE id = ?")
             .bind(id)
             .fetch_one(&self.pool)
             .await
-            .unwrap()
     }
 
-    pub async fn update_task(&self, id: &i64, title: &str, details: &str) -> Task {
+    pub async fn update_task(&self, id: &i64, title: &str, details: &str) -> Result<Task, Error> {
         query_as::<_, Task>(
             "UPDATE tasks SET title = ?, details = ? 
             WHERE id = ?
@@ -96,15 +90,13 @@ impl Database {
         .bind(id)
         .fetch_one(&self.pool)
         .await
-        .unwrap()
     }
 
-    pub async fn list_tasks(&self, limit: &u32, offset: &u32) -> Vec<Task> {
+    pub async fn list_tasks(&self, limit: &u32, offset: &u32) -> Result<Vec<Task>, Error> {
         query_as::<_, Task>("SELECT * FROM tasks LIMIT ? OFFSET ?")
             .bind(limit)
             .bind(offset)
             .fetch_all(&self.pool)
             .await
-            .unwrap()
     }
 }

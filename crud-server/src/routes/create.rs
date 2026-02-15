@@ -14,7 +14,12 @@ pub async fn create_route(
 
     let CreateRequest { title, details } = payload;
 
-    let task = ctx.db.create_task(&title, &details).await;
+    let task = ctx.db.create_task(&title, &details).await.map_err(|e| {
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            format!("Failed to create task {}", e),
+        )
+    })?;
 
     Ok((StatusCode::CREATED, Json(task)))
 }

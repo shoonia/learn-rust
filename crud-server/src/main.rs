@@ -24,7 +24,13 @@ use crate::{
 #[main]
 async fn main() {
     let db = Database::new(DB_URL).await;
-    let app_ctx = AppContext { db };
+
+    if let Err(e) = &db {
+        eprintln!("Failed to initialize database: {}", e);
+        return;
+    }
+
+    let app_ctx = AppContext { db: db.unwrap() };
 
     let app = Router::new()
         .route(
@@ -33,21 +39,21 @@ async fn main() {
         )
         .route("/task/{id}", get(get_route))
         .route("/count", get(count_route))
-        .route("/list", get(list_route))
+        .route("/tasks", get(list_route))
         .fallback(not_found_route)
         .with_state(app_ctx);
 
     let listener = match TcpListener::bind(HOST).await {
         Ok(listener) => listener,
-        Err(error) => {
-            eprintln!("Failed to bind to {HOST}: {}", error);
+        Err(e) => {
+            eprintln!("Failed to bind to {HOST}: {}", e);
             return;
         }
     };
 
     println!("Server running on http://{HOST}");
 
-    if let Err(error) = serve(listener, app).await {
-        eprintln!("Server error: {}", error);
+    if let Err(e) = serve(listener, app).await {
+        eprintln!("Server error: {}", e);
     }
 }

@@ -1,12 +1,22 @@
 use axum::{
     Json, debug_handler,
     extract::{Path, State},
+    http::StatusCode,
+    response::IntoResponse,
 };
 
-use crate::{context::AppContext, models::Task};
+use crate::context::AppContext;
 
 #[debug_handler]
-pub async fn get_route(State(ctx): State<AppContext>, Path(id): Path<i64>) -> Json<Task> {
-    let task = ctx.db.get_task(&id).await;
-    Json(task)
+pub async fn get_route(
+    State(ctx): State<AppContext>,
+    Path(id): Path<i64>,
+) -> Result<impl IntoResponse, (StatusCode, String)> {
+    let task = ctx
+        .db
+        .get_task(&id)
+        .await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    Ok(Json(task))
 }

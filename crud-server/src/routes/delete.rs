@@ -8,7 +8,12 @@ pub async fn delete_route(
     Json(payload): Json<DeleteRequest>,
 ) -> Result<impl IntoResponse, (StatusCode, String)> {
     let id = payload.id;
-    let rows_affected = ctx.db.delete_task(&id).await;
+    let rows_affected = ctx.db.delete_task(&id).await.map_err(|e| {
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            format!("Failed to delete task: {}", e),
+        )
+    })?;
 
     if rows_affected == 0 {
         Ok((
