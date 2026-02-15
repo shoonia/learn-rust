@@ -35,7 +35,8 @@ impl Database {
             BEGIN
               UPDATE tasks SET date_updated = CURRENT_TIMESTAMP 
               WHERE id = OLD.id;
-            END;",
+            END
+            ",
         )
         .execute(&pool)
         .await?;
@@ -85,7 +86,7 @@ impl Database {
         details: String,
     ) -> Result<Task, Error> {
         query_as::<_, Task>(
-            "UPDATE tasks SET title = ?, details = ? 
+            "UPDATE tasks SET title = ?, details = ?
             WHERE id = ?
             RETURNING *
             ",

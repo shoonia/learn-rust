@@ -12,11 +12,12 @@ pub async fn get_route(
     State(ctx): State<AppContext>,
     Path(id): Path<i64>,
 ) -> Result<impl IntoResponse, (StatusCode, String)> {
-    let task = ctx
-        .db
-        .get_task(id)
-        .await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    let task = ctx.db.get_task(id).await.map_err(|e| {
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            format!("Failed to retrieve task with id {}: {}", id, e),
+        )
+    })?;
 
     Ok(Json(task))
 }
