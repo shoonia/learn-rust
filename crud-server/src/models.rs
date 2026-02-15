@@ -7,6 +7,9 @@ pub struct Task {
     #[validate(range(min = 0, message = "`id` must be a non-negative integer"))]
     pub id: i64,
 
+    #[validate(range(min = 1, message = "`revision` must be a positive integer"))]
+    pub revision: i64,
+
     #[validate(length(
         min = 1,
         max = 255,

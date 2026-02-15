@@ -19,6 +19,7 @@ impl Database {
             "
             CREATE TABLE IF NOT EXISTS tasks (
               id INTEGER PRIMARY KEY AUTOINCREMENT,
+              revision INTEGER DEFAULT 1,
               title VARCHAR(255) NOT NULL,
               details VARCHAR(255) NOT NULL,
               date_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -33,7 +34,7 @@ impl Database {
             CREATE TRIGGER IF NOT EXISTS update_tasks_timestamp
             AFTER UPDATE OF title, details ON tasks
             BEGIN
-              UPDATE tasks SET date_updated = CURRENT_TIMESTAMP 
+              UPDATE tasks SET date_updated = CURRENT_TIMESTAMP
               WHERE id = OLD.id;
             END
             ",
@@ -82,27 +83,52 @@ impl Database {
     pub async fn update_task(
         &self,
         id: i64,
+        revision: i64,
         title: String,
         details: String,
     ) -> Result<Task, Error> {
-        query_as::<_, Task>(
-            "UPDATE tasks SET title = ?, details = ?
-            WHERE id = ?
+        let result = query_as::<_, Task>(
+            "
+            UPDATE tasks SET title = ?, details = ?, revision = revision + 1
+            WHERE id = ? AND revision = ?
             RETURNING *
             ",
         )
         .bind(title)
         .bind(details)
         .bind(id)
-        .fetch_one(&self.pool)
-        .await
+        .bind(revision)
+        .fetch_optional(&self.pool)
+        .await?;
+
+        match result {
+            Some(task) => Ok(task),
+            None => {
+                let exists = query("SELECT 1 FROM tasks WHERE id = ?")
+                    .bind(id)
+                    .fetch_optional(&self.pool)
+                    .await?;
+
+                if exists.is_some() {
+                    Err(Error::InvalidArgument("revision".to_string()))
+                } else {
+                    Err(Error::RowNotFound)
+                }
+            }
+        }
     }
 
     pub async fn list_tasks(&self, limit: u32, offset: u32) -> Result<Vec<Task>, Error> {
-        query_as::<_, Task>("SELECT * FROM tasks LIMIT ? OFFSET ?")
-            .bind(limit)
-            .bind(offset)
-            .fetch_all(&self.pool)
-            .await
+        query_as::<_, Task>(
+            "
+            SELECT * FROM tasks
+            ORDER BY date_created DESC
+            LIMIT ? OFFSET ?
+            ",
+        )
+        .bind(limit)
+        .bind(offset)
+        .fetch_all(&self.pool)
+        .await
     }
 }
