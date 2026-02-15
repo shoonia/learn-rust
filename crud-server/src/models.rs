@@ -4,7 +4,7 @@ use validator::Validate;
 
 #[derive(Debug, FromRow, Serialize, Deserialize, Validate)]
 pub struct Task {
-    #[validate(range(min = 0, message = "`id` must be a non-negative integer"))]
+    #[validate(range(min = 1, message = "`id` must be a positive integer"))]
     pub id: i64,
 
     #[validate(range(min = 1, message = "`revision` must be a positive integer"))]
@@ -49,9 +49,12 @@ pub struct CreateRequest {
     pub details: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Validate)]
 pub struct DeleteRequest {
+    #[validate(range(min = 1, message = "`id` must be a positive integer"))]
     pub id: i64,
+    #[validate(range(min = 1, message = "`revision` must be a positive integer"))]
+    pub revision: i64,
 }
 
 #[derive(Deserialize, Validate)]

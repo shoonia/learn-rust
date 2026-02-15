@@ -52,12 +52,28 @@ impl Database {
         .await
     }
 
-    pub async fn delete_task(&self, id: i64) -> Result<u64, Error> {
-        query("DELETE FROM tasks WHERE id = ?")
-            .bind(id)
-            .execute(&self.pool)
-            .await
-            .map(|r| r.rows_affected())
+    pub async fn delete_task(&self, id: i64, revision: i64) -> Result<(), Error> {
+        let result = query(
+            "
+            DELETE FROM tasks 
+            WHERE id = ? AND revision = ?
+            ",
+        )
+        .bind(id)
+        .bind(revision)
+        .execute(&self.pool)
+        .await?;
+
+        match result.rows_affected() {
+            0 => {
+                if self.is_task_exists(id).await? {
+                    Err(Error::InvalidArgument("revision".to_string()))
+                } else {
+                    Err(Error::RowNotFound)
+                }
+            }
+            _ => Ok(()),
+        }
     }
 
     pub async fn get_task(&self, id: i64) -> Result<Task, Error> {
@@ -96,12 +112,7 @@ impl Database {
         match result {
             Some(task) => Ok(task),
             None => {
-                let exists = query("SELECT 1 FROM tasks WHERE id = ?")
-                    .bind(id)
-                    .fetch_optional(&self.pool)
-                    .await?;
-
-                if exists.is_some() {
+                if self.is_task_exists(id).await? {
                     Err(Error::InvalidArgument("revision".to_string()))
                 } else {
                     Err(Error::RowNotFound)
@@ -122,5 +133,14 @@ impl Database {
         .bind(offset)
         .fetch_all(&self.pool)
         .await
+    }
+
+    async fn is_task_exists(&self, id: i64) -> Result<bool, Error> {
+        let result = query("SELECT 1 FROM tasks WHERE id = ?")
+            .bind(id)
+            .fetch_optional(&self.pool)
+            .await?;
+
+        Ok(result.is_some())
     }
 }
