@@ -14,7 +14,7 @@ pub async fn update_route(
 
     let updated_task = ctx
         .db
-        .update_task(&payload.id, &payload.title, &payload.details)
+        .update_task(payload.id, payload.title, payload.details)
         .await
         .map_err(|e| {
             (

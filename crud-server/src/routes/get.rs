@@ -14,7 +14,7 @@ pub async fn get_route(
 ) -> Result<impl IntoResponse, (StatusCode, String)> {
     let task = ctx
         .db
-        .get_task(&id)
+        .get_task(id)
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 

@@ -24,7 +24,7 @@ pub async fn list_route(
     let limit = params.limit.unwrap_or(100);
     let offset = params.offset.unwrap_or(0);
 
-    let (tasks, total) = try_join!(ctx.db.list_tasks(&limit, &offset), ctx.db.count_tasks())
+    let (tasks, total) = try_join!(ctx.db.list_tasks(limit, offset), ctx.db.count_tasks())
         .map_err(|e| {
             (
                 StatusCode::INTERNAL_SERVER_ERROR,

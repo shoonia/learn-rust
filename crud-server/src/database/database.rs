@@ -50,7 +50,7 @@ impl Database {
             .map(|row| row.get::<i64, _>("count"))
     }
 
-    pub async fn create_task(&self, title: &str, details: &str) -> Result<Task, Error> {
+    pub async fn create_task(&self, title: String, details: String) -> Result<Task, Error> {
         query_as::<_, Task>(
             "
             INSERT INTO tasks (title, details) VALUES (?, ?)
@@ -63,7 +63,7 @@ impl Database {
         .await
     }
 
-    pub async fn delete_task(&self, id: &i64) -> Result<u64, Error> {
+    pub async fn delete_task(&self, id: i64) -> Result<u64, Error> {
         query("DELETE FROM tasks WHERE id = ?")
             .bind(id)
             .execute(&self.pool)
@@ -71,14 +71,19 @@ impl Database {
             .map(|r| r.rows_affected())
     }
 
-    pub async fn get_task(&self, id: &i64) -> Result<Task, Error> {
+    pub async fn get_task(&self, id: i64) -> Result<Task, Error> {
         query_as::<_, Task>("SELECT * FROM tasks WHERE id = ?")
             .bind(id)
             .fetch_one(&self.pool)
             .await
     }
 
-    pub async fn update_task(&self, id: &i64, title: &str, details: &str) -> Result<Task, Error> {
+    pub async fn update_task(
+        &self,
+        id: i64,
+        title: String,
+        details: String,
+    ) -> Result<Task, Error> {
         query_as::<_, Task>(
             "UPDATE tasks SET title = ?, details = ? 
             WHERE id = ?
@@ -92,7 +97,7 @@ impl Database {
         .await
     }
 
-    pub async fn list_tasks(&self, limit: &u32, offset: &u32) -> Result<Vec<Task>, Error> {
+    pub async fn list_tasks(&self, limit: u32, offset: u32) -> Result<Vec<Task>, Error> {
         query_as::<_, Task>("SELECT * FROM tasks LIMIT ? OFFSET ?")
             .bind(limit)
             .bind(offset)
