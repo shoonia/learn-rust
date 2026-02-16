@@ -1,4 +1,4 @@
-use crate::database::database::Database;
+use crate::database::Database;
 
 #[derive(Clone)]
 pub struct AppContext {

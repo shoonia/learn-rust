@@ -9,13 +9,14 @@ use tokio::{main, net::TcpListener};
 mod consts;
 mod context;
 mod database;
+mod errors;
 mod models;
 mod routes;
 
 use crate::{
     consts::*,
     context::AppContext,
-    database::database::Database,
+    database::Database,
     routes::{
         count::count_route, create::create_route, delete::delete_route, get::get_route,
         list::list_route, not_found::not_found_route, update::update_route,

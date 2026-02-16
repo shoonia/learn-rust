@@ -1,5 +1,6 @@
 use axum::http::StatusCode;
 use sqlx::Error;
+use validator::ValidationErrors;
 
 pub fn map_error(error: Error) -> (StatusCode, String) {
     match error {
@@ -16,4 +17,8 @@ pub fn map_error(error: Error) -> (StatusCode, String) {
             format!("Unexpected error: {}", error),
         ),
     }
+}
+
+pub fn validation_error(e: ValidationErrors) -> (StatusCode, String) {
+    (StatusCode::BAD_REQUEST, format!("Validation error: {}", e))
 }

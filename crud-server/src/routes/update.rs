@@ -1,16 +1,18 @@
 use axum::{Json, debug_handler, extract::State, http::StatusCode, response::IntoResponse};
 use validator::Validate;
 
-use crate::{context::AppContext, database::utils::map_error, models::Task};
+use crate::{
+    context::AppContext,
+    errors::{map_error, validation_error},
+    models::Task,
+};
 
 #[debug_handler]
 pub async fn update_route(
     State(ctx): State<AppContext>,
     Json(req): Json<Task>,
 ) -> Result<impl IntoResponse, (StatusCode, String)> {
-    if let Err(e) = req.validate() {
-        return Err((StatusCode::BAD_REQUEST, format!("Validation error: {}", e)));
-    }
+    req.validate().map_err(validation_error)?;
 
     let updated_task = ctx
         .db

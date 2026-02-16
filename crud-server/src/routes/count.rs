@@ -1,6 +1,6 @@
 use axum::{Json, debug_handler, extract::State, http::StatusCode, response::IntoResponse};
 
-use crate::{AppContext, database::utils::map_error, models::CountResponse};
+use crate::{AppContext, errors::map_error, models::CountResponse};
 
 #[debug_handler]
 pub async fn count_route(

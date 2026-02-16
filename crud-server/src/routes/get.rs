@@ -5,7 +5,7 @@ use axum::{
     response::IntoResponse,
 };
 
-use crate::{context::AppContext, database::utils::map_error};
+use crate::{context::AppContext, errors::map_error};
 
 #[debug_handler]
 pub async fn get_route(

@@ -1,22 +1,22 @@
 use axum::{Json, debug_handler, extract::State, http::StatusCode, response::IntoResponse};
 use validator::Validate;
 
-use crate::{context::AppContext, database::utils::map_error, models::CreateRequest};
+use crate::{
+    context::AppContext,
+    errors::{map_error, validation_error},
+    models::CreateRequest,
+};
 
 #[debug_handler]
 pub async fn create_route(
     State(ctx): State<AppContext>,
-    Json(payload): Json<CreateRequest>,
+    Json(req): Json<CreateRequest>,
 ) -> Result<impl IntoResponse, (StatusCode, String)> {
-    if let Err(e) = payload.validate() {
-        return Err((StatusCode::BAD_REQUEST, format!("Validation error: {}", e)));
-    }
-
-    let CreateRequest { title, details } = payload;
+    req.validate().map_err(validation_error)?;
 
     let task = ctx
         .db
-        .create_task(title, details)
+        .create_task(req.title, req.details)
         .await
         .map_err(map_error)?;
 
