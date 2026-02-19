@@ -5,6 +5,7 @@ use axum::{
 };
 use std::error::Error;
 use tokio::{main, net::TcpListener};
+use tower_http::services::ServeDir;
 
 mod consts;
 mod context;
@@ -26,6 +27,9 @@ use crate::{
 #[main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let db = Database::new(DB_URL).await?;
+    let static_files = ServeDir::new("website")
+        .append_index_html_on_directories(true)
+        .precompressed_gzip();
 
     let app = Router::new()
         .route(
@@ -36,6 +40,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .route("/count", get(count_route))
         .route("/tasks", get(list_route))
         .fallback(not_found_route)
+        .fallback_service(static_files)
         .with_state(AppContext { db });
 
     let listener = TcpListener::bind(HOST).await?;
