@@ -36,67 +36,63 @@
   <script type="module">
     const $ = (id) => document.getElementById(id);
 
-    const init = async () => {
-      const { instance } = await WebAssembly.instantiateStreaming(
-        fetch('target/wasm32-unknown-unknown/release/wasm.wasm'),
-        {}
-      );
-      return instance.exports;
+    const source = await WebAssembly.instantiateStreaming(
+      fetch('target/wasm32-unknown-unknown/release/wasm.wasm'),
+    );
+
+    const { exports } = source.instance;
+
+    // Number squarer
+
+    $('input-squarer').addEventListener('input', (event) => {
+      $('out-squarer').textContent = exports.squarer(event.target.valueAsNumber);
+    });
+
+    // Array sum
+
+    $('input-sum').addEventListener('input', (event) => {
+      const value = event.target.value
+        .trim()
+        .split(' ')
+        .map(Number);
+
+      const len = value.length;
+      const ptr = 0;
+
+      new Float64Array(exports.memory.buffer, ptr, len).set(value);
+
+      $('out-sum').textContent = exports.sum(ptr, len);
+    });
+
+    // to Uppercase string
+
+    const sendString = (str) => {
+      const bytes = new TextEncoder().encode(str);
+      const ptr = exports.alloc(bytes.length);
+      new Uint8Array(exports.memory.buffer, ptr, bytes.length).set(bytes);
+      return [ptr, bytes.length];
     }
 
-    init().then((exports) => {
-      // Number squarer
+    const readString = (ptr, outLenPtr) => {
+      const resultLen = new DataView(exports.memory.buffer).getUint32(outLenPtr, true);
+      const bytes = new Uint8Array(exports.memory.buffer, ptr, resultLen);
+      return [
+        new TextDecoder().decode(bytes),
+        resultLen
+      ];
+    }
 
-      $('input-squarer').addEventListener('input', (event) => {
-        $('out-squarer').textContent = exports.squarer(event.target.valueAsNumber);
-      });
+    $('input-uppercase').addEventListener('input', (event) => {
+      const value = event.target.value;
+      const [ptr, len] = sendString(value);
+      const outLenPtr = exports.alloc(8);
+      const resultPtr = exports.to_uppercase(ptr, len, outLenPtr);
+      const [resultStr, resultLen] = readString(resultPtr, outLenPtr);
 
-      // Array sum
-
-      $('input-sum').addEventListener('input', (event) => {
-        const value = event.target.value
-          .trim()
-          .split(' ')
-          .map(Number);
-
-        const len = value.length;
-        const ptr = 0;
-
-        new Float64Array(exports.memory.buffer, ptr, len).set(value);
-
-        $('out-sum').textContent = exports.sum(ptr, len);
-      });
-
-      // to Uppercase string
-
-      const sendString = (str) => {
-        const bytes = new TextEncoder().encode(str);
-        const ptr = exports.alloc(bytes.length);
-        new Uint8Array(exports.memory.buffer, ptr, bytes.length).set(bytes);
-        return [ptr, bytes.length];
-      }
-
-      const readString = (ptr, outLenPtr) => {
-        const resultLen = new DataView(exports.memory.buffer).getUint32(outLenPtr, true);
-        const bytes = new Uint8Array(exports.memory.buffer, ptr, resultLen);
-        return [
-          new TextDecoder().decode(bytes), 
-          resultLen
-        ];
-      }
-
-      $('input-uppercase').addEventListener('input', (event) => {
-        const value = event.target.value;
-        const [ptr, len] = sendString(value);
-        const outLenPtr = exports.alloc(8);
-        const resultPtr = exports.to_uppercase(ptr, len, outLenPtr);
-        const [resultStr, resultLen] = readString(resultPtr, outLenPtr);
-
-        $('out-uppercase').textContent = resultStr;
-        exports.dealloc(ptr, len);
-        exports.dealloc(resultPtr, resultLen);
-        exports.dealloc(outLenPtr, 8);
-      });
+      $('out-uppercase').textContent = resultStr;
+      exports.dealloc(ptr, len);
+      exports.dealloc(resultPtr, resultLen);
+      exports.dealloc(outLenPtr, 8);
     });
 
   </script>
