@@ -1,10 +1,15 @@
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+use protoc_bin_vendored::protoc_bin_path;
+use std::{env, error::Error};
+use tonic_build::configure;
+
+fn main() -> Result<(), Box<dyn Error>> {
+    let path = protoc_bin_path()?;
+
     unsafe {
-        let path = protoc_bin_vendored::protoc_bin_path().unwrap();
-        std::env::set_var("PROTOC", path);
+        env::set_var("PROTOC", path);
     }
 
-    tonic_build::configure().compile(&["proto/servers.proto"], &["proto"])?;
+    configure().compile(&["proto/servers.proto"], &["proto"])?;
 
     Ok(())
 }

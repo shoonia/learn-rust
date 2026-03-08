@@ -1,14 +1,15 @@
+use std::error::Error;
 use tonic::{Request, Response, Status, transport::Server};
 use tonic_web::GrpcWebLayer;
 use tower_http::cors::{AllowOrigin, Any, CorsLayer};
 
-pub mod servers {
+pub mod proto {
     tonic::include_proto!("com.servers");
 }
 
-use crate::servers::greeter_server::Greeter;
-use servers::greeter_server::GreeterServer;
-use servers::{HelloRequest, HelloResponse};
+use crate::proto::greeter_server::Greeter;
+use proto::greeter_server::GreeterServer;
+use proto::{HelloRequest, HelloResponse};
 
 #[derive(Debug, Default)]
 pub struct GreeterImpl {}
@@ -21,16 +22,16 @@ impl Greeter for GreeterImpl {
     ) -> Result<Response<HelloResponse>, Status> {
         let req = request.into_inner();
 
-        let reply = HelloResponse {
-            message: format!("Hello, {}!", req.name),
+        let reponse = HelloResponse {
+            reply: format!("Hello, {}!", req.name),
         };
 
-        Ok(Response::new(reply))
+        Ok(Response::new(reponse))
     }
 }
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+async fn main() -> Result<(), Box<dyn Error>> {
     let addr = "127.0.0.1:50051".parse()?;
     let server = GreeterImpl::default();
 
